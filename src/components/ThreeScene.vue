@@ -77,39 +77,39 @@ function createStandardEffect() {
 
   // Map personality codes to geometry types
   const geometryMap: Record<string, THREE.BufferGeometry> = {
-    BOSS: new THREE.BoxGeometry(1.2, 1.2, 1.2),
+    HEAD: new THREE.BoxGeometry(1.2, 1.2, 1.2),
     MILKTEA: new THREE.SphereGeometry(0.8, 32, 32),
-    FIREWORK: new THREE.IcosahedronGeometry(0.9, 1),
-    TROUBLE: new THREE.OctahedronGeometry(0.9),
-    ATHLETE: new THREE.ConeGeometry(0.6, 1.5, 8),
-    IDOL: new THREE.TorusGeometry(0.7, 0.3, 16, 32),
-    GENERAL: new THREE.DodecahedronGeometry(0.9),
-    ANCHOR: new THREE.CylinderGeometry(0.5, 0.7, 1.2, 8),
-    ARCHIVER: new THREE.BoxGeometry(1, 1.4, 0.6),
-    ANGEL: new THREE.SphereGeometry(0.7, 32, 32),
-    POET: new THREE.TetrahedronGeometry(1),
-    HACKER: new THREE.TorusKnotGeometry(0.5, 0.2, 64, 8),
-    NINJA: new THREE.ConeGeometry(0.5, 1.2, 4),
-    ARTIST: new THREE.IcosahedronGeometry(0.8, 0),
-    STRATEGIST: new THREE.OctahedronGeometry(1),
-    PROPHET: new THREE.SphereGeometry(0.6, 32, 32),
-    BUTTERFLY: new THREE.SphereGeometry(0.7, 32, 32),
-    FIRECRACKER: new THREE.IcosahedronGeometry(0.8, 1),
-    BAMBOO: new THREE.CylinderGeometry(0.3, 0.3, 1.5, 8),
-    NEBULA: new THREE.TorusGeometry(0.6, 0.2, 16, 32),
+    JIAHAO: new THREE.IcosahedronGeometry(0.9, 1),
+    BANDIT: new THREE.OctahedronGeometry(0.9),
+    SPOILER: new THREE.ConeGeometry(0.6, 1.5, 8),
+    PUPPY: new THREE.TorusGeometry(0.7, 0.3, 16, 32),
+    LEADER: new THREE.DodecahedronGeometry(0.9),
+    ZXF: new THREE.CylinderGeometry(0.5, 0.7, 1.2, 8),
+    GENIUS: new THREE.BoxGeometry(1, 1.4, 0.6),
+    DORM: new THREE.SphereGeometry(0.7, 32, 32),
+    DREAMER: new THREE.TetrahedronGeometry(1),
+    MONITOR: new THREE.TorusKnotGeometry(0.5, 0.2, 64, 8),
+    TOOLBOX: new THREE.ConeGeometry(0.5, 1.2, 4),
+    SEWOO: new THREE.IcosahedronGeometry(0.8, 0),
+    SCHEMER: new THREE.OctahedronGeometry(1),
+    WEEKLY: new THREE.SphereGeometry(0.6, 32, 32),
+    OG: new THREE.SphereGeometry(0.7, 32, 32),
+    OV: new THREE.IcosahedronGeometry(0.8, 1),
+    RG: new THREE.CylinderGeometry(0.3, 0.3, 1.5, 8),
+    RV: new THREE.TorusGeometry(0.6, 0.2, 16, 32),
   }
 
   const geometry = geometryMap[props.personalityCode] || new THREE.SphereGeometry(0.8, 32, 32)
 
   // Material with personality color
   const colorMap: Record<string, number> = {
-    BOSS: 0x4a90e2, MILKTEA: 0xf5a623, FIREWORK: 0xff6b9d,
-    TROUBLE: 0x7ed321, ATHLETE: 0xd0021b, IDOL: 0xbd10e0,
-    GENERAL: 0x9013fe, ANCHOR: 0x50e3c2, ARCHIVER: 0xb8e986,
-    ANGEL: 0xffd93d, POET: 0x6a5acd, HACKER: 0x00ced1,
-    NINJA: 0x2c3e50, ARTIST: 0xe74c3c, STRATEGIST: 0x3498db,
-    PROPHET: 0x9b59b6, BUTTERFLY: 0xff69b4, FIRECRACKER: 0xff4500,
-    BAMBOO: 0x228b22, NEBULA: 0x4169e1,
+    HEAD: 0x4a90e2, MILKTEA: 0xf5a623, JIAHAO: 0xff6b9d,
+    BANDIT: 0x7ed321, SPOILER: 0xd0021b, PUPPY: 0xbd10e0,
+    LEADER: 0x9013fe, ZXF: 0x50e3c2, GENIUS: 0xb8e986,
+    DORM: 0xffd93d, DREAMER: 0x6a5acd, MONITOR: 0x00ced1,
+    TOOLBOX: 0x2c3e50, SEWOO: 0xe74c3c, SCHEMER: 0x3498db,
+    WEEKLY: 0x9b59b6, OG: 0xff69b4, OV: 0xff4500,
+    RG: 0x228b22, RV: 0x4169e1,
   }
 
   const material = new THREE.MeshStandardMaterial({

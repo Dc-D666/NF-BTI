@@ -1,4 +1,4 @@
-export type TestMode = 'quick' | 'full'
+export type TestMode = 'quick' | 'full' | 'debug'
 
 export interface Question {
   id: number
@@ -30,6 +30,8 @@ export interface PersonalityType {
   detail?: string
   isHidden: boolean
   unlockCondition?: string
+  fourLetter?: string
+  illustration?: string
 }
 
 export interface TestResult {

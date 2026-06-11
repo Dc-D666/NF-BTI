@@ -1,13 +1,25 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useTestStore } from '@/stores/testStore'
+import { counter, getLastCounterError } from '@/utils/counter'
 import { ref, onMounted } from 'vue'
 
 const router = useRouter()
 const store = useTestStore()
 const showResumeModal = ref(false)
-const resumeMode = ref<'quick' | 'full' | null>(null)
+const resumeMode = ref<'quick' | 'full' | 'debug' | null>(null)
 const resumePage = ref(1)
+const showContributors = ref(false)
+const showChangelog = ref(false)
+
+// Debug 模式状态
+const debugEnabled = ref(false)
+const clickCount = ref(0)
+let clickTimer: ReturnType<typeof setTimeout> | null = null
+
+// 访问计数
+const visitCount = ref(0)
+const counterError = ref('')
 
 onMounted(() => {
   const unfinished = store.hasUnfinishedProgress()
@@ -16,11 +28,34 @@ onMounted(() => {
     resumePage.value = unfinished.currentPage
     showResumeModal.value = true
   }
+  // 增加访问计数
+  counter.hitVisit().then((n) => {
+    visitCount.value = n
+    if (n === 0) {
+      const err = getLastCounterError()
+      if (err) {
+        counterError.value = `计数服务异常 (${err.status} ${err.statusText})`
+        console.error('[Counter Debug]', err)
+      }
+    }
+  })
 })
 
-function startTest(mode: 'quick' | 'full') {
+function startTest(mode: 'quick' | 'full' | 'debug') {
   store.setMode(mode)
   router.push(`/test/${mode}/1`)
+}
+
+function handleLogoClick() {
+  clickCount.value++
+  if (clickTimer) clearTimeout(clickTimer)
+  clickTimer = setTimeout(() => {
+    clickCount.value = 0
+  }, 2000)
+  if (clickCount.value >= 5) {
+    debugEnabled.value = true
+    clickCount.value = 0
+  }
 }
 
 function resumeTest() {
@@ -45,14 +80,15 @@ function dismissModal() {
 
     <div class="content">
       <!-- 顶部标签 -->
-      <div class="eyebrow">南方中学 · 人格测试</div>
+      <div class="top-bar">
+        <div class="eyebrow">南方中学 · 人格测试</div>
+        <button class="changelog-btn" @click="showChangelog = true">近期更新</button>
+      </div>
 
       <!-- Logo 区域 -->
-      <div class="hero">
+      <div class="hero" @click="handleLogoClick">
         <div class="logo-mark" aria-hidden="true">
-          <span class="logo-nf">NF</span>
-          <span class="logo-divider"></span>
-          <span class="logo-bti">BTI</span>
+          <span class="logo-text">NFTI</span>
         </div>
         <h1 class="title">
           你是哪种<br />
@@ -62,15 +98,6 @@ function dismissModal() {
           基于南方中学真实校园场景<br />
           19 种人格，等你解锁
         </p>
-      </div>
-
-      <!-- 场景标签 — 不对称排列 -->
-      <div class="scene-tags">
-        <span class="tag" style="--i: 0">早起抢食堂</span>
-        <span class="tag" style="--i: 1">晚自习装睡</span>
-        <span class="tag" style="--i: 2">三楼酱饼</span>
-        <span class="tag" style="--i: 3">社团招新</span>
-        <span class="tag" style="--i: 4">跑操打卡</span>
       </div>
 
       <!-- 模式选择 — 非对称卡片 -->
@@ -85,7 +112,7 @@ function dismissModal() {
           <div class="card-arrow" aria-hidden="true">→</div>
         </div>
 
-        <div class="mode-card full" @click="startTest('full')">
+        <div class="mode-card full" @click="startTest(debugEnabled ? 'debug' : 'full')">
           <div class="card-meta">
             <span class="card-label">完整测试</span>
             <span class="card-time">~8 分钟</span>
@@ -96,13 +123,30 @@ function dismissModal() {
             <span class="feature-pill">深度解析</span>
             <span class="feature-pill">隐藏彩蛋</span>
           </div>
+          <div v-if="debugEnabled" class="debug-badge">DEBUG</div>
           <div class="card-arrow" aria-hidden="true">→</div>
         </div>
       </div>
 
-      <!-- 底部 -->
-      <footer class="footer">
-        <p>© 2025 NF-BTI · 南方人专属</p>
+      <!-- Debug 开关（触发后显示） -->
+      <div v-if="debugEnabled" class="debug-panel">
+        <label class="debug-toggle">
+          <input type="checkbox" v-model="debugEnabled" />
+          <span>Debug 模式已激活 — 点击上方卡片自动答题</span>
+        </label>
+      </div>
+
+      <!-- 底部信息栏 -->
+      <footer class="footer-bar">
+        <span class="footer-version">v1.2-alpha</span>
+        <span class="footer-divider">·</span>
+        <button class="footer-link" @click="showContributors = true">贡献者</button>
+        <span class="footer-divider">·</span>
+        <button class="footer-link" @click="router.push('/feedback')">
+          <span aria-hidden="true">✎</span> 反馈
+        </button>
+        <span class="footer-divider">·</span>
+        <span class="footer-copyright">© 2025 NFTI · 南方人专属</span>
       </footer>
     </div>
 
@@ -118,6 +162,91 @@ function dismissModal() {
         <div class="modal-actions">
           <button class="btn-resume" @click="resumeTest">继续测试</button>
           <button class="btn-dismiss" @click="dismissModal">重新开始</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 更新日志弹窗 -->
+    <div v-if="showChangelog" class="modal-overlay" @click="showChangelog = false">
+      <div class="modal changelog-modal" @click.stop>
+        <h3>更新日志</h3>
+        <div class="changelog-list">
+          <div class="changelog-item">
+            <div class="changelog-version">
+              <span class="version-tag">v1.2-alpha</span>
+              <span class="version-date">当前版本</span>
+            </div>
+            <ul>
+              <li>完成 16 种标准人格的插图设计与展示</li>
+              <li>新增人格关系分析</li>
+              <li>结果页全新布局</li>
+              <li>反馈入口新增类型</li>
+            </ul>
+          </div>
+          <div class="changelog-item">
+            <div class="changelog-version">
+              <span class="version-tag">v1.1-alpha</span>
+            </div>
+            <ul>
+              <li>完成人格数据全面重构，19 种人格名称与描述更新</li>
+              <li>新增反馈入口，支持 Bug 反馈与功能建议</li>
+              <li>优化结果页分数计算与维度解析展示</li>
+              <li>四维解析条目全面校园化表述</li>
+            </ul>
+          </div>
+          <div class="changelog-item">
+            <div class="changelog-version">
+              <span class="version-tag">v1.0-alpha</span>
+            </div>
+            <ul>
+              <li>完成 48 道完整测试题目设计与 12 道快速测试题目设计</li>
+              <li>完成 16 种标准人格 + 3 款隐藏人格的基础设计</li>
+              <li>搭建双模式测试框架</li>
+              <li>基于南方中学真实校园场景构建八维字母体系</li>
+            </ul>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-dismiss" @click="showChangelog = false">关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 贡献者名单弹窗 -->
+    <div v-if="showContributors" class="modal-overlay" @click="showContributors = false">
+      <div class="modal contributors-modal" @click.stop>
+        <h3>贡献者名单</h3>
+        <div class="contributors-list">
+          <div class="contributor-row">
+            <span class="contributor-role">策划</span>
+            <span class="contributor-names">2118 言语薇</span>
+          </div>
+          <div class="contributor-row">
+            <span class="contributor-role">开发</span>
+            <span class="contributor-names">2120 戴睿羲 · Kimi-K2.6 · DeepSeek-v4-flash</span>
+          </div>
+          <div class="contributor-row">
+            <span class="contributor-role">设计</span>
+            <span class="contributor-names">2120 戴睿羲 · ChatGPT</span>
+          </div>
+          <div class="contributor-row">
+            <span class="contributor-role">内测志愿者</span>
+            <span class="contributor-names">2117 胡锦鹏、2118 言语薇、2119 蒋瀚霆、2119 马毓敏、2120 尹瑞熙、2317 董钊桧、2318 刘俊杰、2520 谭一凡</span>
+          </div>
+          <div class="contributor-row">
+            <span class="contributor-role">数据来源</span>
+            <span class="contributor-names">
+              <a href="https://pd.qq.com/g/nanfang1958" target="_blank" rel="noopener noreferrer">腾讯频道</a>
+            </span>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-dismiss" @click="showContributors = false">关闭</button>
+        </div>
+        <div class="repo-link">
+          <a href="https://github.com/Dc-D666/NF-BTI" target="_blank" rel="noopener noreferrer">
+            开源项目地址 ↗
+          </a>
         </div>
       </div>
     </div>
@@ -174,7 +303,13 @@ function dismissModal() {
   min-height: 100vh;
 }
 
-/* ---- Eyebrow ---- */
+/* ---- Top Bar ---- */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-8);
+}
 .eyebrow {
   font-family: var(--font-body);
   font-size: 12px;
@@ -182,7 +317,23 @@ function dismissModal() {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-text-muted);
-  margin-bottom: var(--space-8);
+}
+.changelog-btn {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-primary);
+  background: var(--indigo-50);
+  border: 1px solid var(--indigo-100);
+  border-radius: 8px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background 150ms ease, transform 100ms ease;
+}
+.changelog-btn:hover {
+  background: var(--indigo-100);
+}
+.changelog-btn:active {
+  transform: scale(0.96);
 }
 
 /* ---- Hero ---- */
@@ -199,12 +350,6 @@ function dismissModal() {
   font-weight: 700;
   font-size: 18px;
   color: var(--color-primary);
-}
-.logo-divider {
-  width: 1px;
-  height: 16px;
-  background: var(--color-primary);
-  opacity: 0.4;
 }
 
 .title {
@@ -238,28 +383,6 @@ function dismissModal() {
   font-size: 16px;
   line-height: 1.7;
   color: var(--color-text-muted);
-}
-
-/* ---- Scene Tags ---- */
-.scene-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-bottom: var(--space-12);
-}
-.tag {
-  font-size: 13px;
-  padding: var(--space-2) var(--space-3);
-  border-radius: 100px;
-  background: var(--color-bg-soft);
-  color: var(--gray-600);
-  border: 1px solid var(--color-border);
-  animation: tagIn 500ms var(--ease-out-quint) both;
-  animation-delay: calc(var(--i, 0) * 80ms + 200ms);
-}
-@keyframes tagIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ---- Mode Section ---- */
@@ -376,16 +499,32 @@ function dismissModal() {
   transform: translateY(-50%) translateX(4px);
 }
 
-/* ---- Footer ---- */
-.footer {
-  text-align: center;
-  padding-top: var(--space-12);
-  padding-bottom: var(--space-4);
+/* ---- Footer Bar ---- */
+.footer-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-8) 0 var(--space-4);
+  flex-wrap: wrap;
 }
-.footer p {
-  font-size: 12px;
+.footer-version,
+.footer-copyright,
+.footer-divider {
+  font-size: 11px;
   color: var(--gray-400);
-  letter-spacing: 0.02em;
+}
+.footer-link {
+  font-size: 11px;
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 150ms ease;
+}
+.footer-link:hover {
+  opacity: 0.7;
 }
 
 /* ---- Modal ---- */
@@ -471,6 +610,146 @@ function dismissModal() {
 }
 .btn-dismiss:hover {
   background: var(--gray-200);
+}
+
+/* ---- Changelog Modal ---- */
+.changelog-modal {
+  max-width: 440px;
+  max-height: 70vh;
+  overflow-y: auto;
+  text-align: left;
+}
+.changelog-modal h3 {
+  text-align: center;
+  margin-bottom: var(--space-5);
+}
+.changelog-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+.changelog-item {
+  padding: var(--space-4);
+  background: var(--gray-50);
+  border-radius: 16px;
+}
+.changelog-version {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+.version-tag {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: var(--indigo-50);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+.version-date {
+  font-size: 11px;
+  color: var(--gray-400);
+}
+.changelog-item ul {
+  margin: 0;
+  padding-left: var(--space-5);
+  list-style-type: disc;
+}
+.changelog-item li {
+  font-size: 13px;
+  color: var(--gray-600);
+  line-height: 1.7;
+  margin-bottom: var(--space-1);
+}
+.changelog-item li::marker {
+  color: var(--indigo-300);
+}
+
+/* ---- Contributors Modal ---- */
+.contributors-modal {
+  max-width: 420px;
+}
+.contributors-list {
+  text-align: left;
+  margin: var(--space-4) 0 var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.contributor-row {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+.contributor-role {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary);
+  width: 70px;
+  flex-shrink: 0;
+  text-align: right;
+}
+.contributor-names {
+  font-size: 13px;
+  color: var(--gray-600);
+  line-height: 1.5;
+  flex: 1;
+}
+.contributor-names a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+.contributor-names a:hover {
+  text-decoration: underline;
+}
+.repo-link {
+  margin-top: var(--space-4);
+  text-align: center;
+}
+.repo-link a {
+  font-size: 12px;
+  color: var(--gray-400);
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+.repo-link a:hover {
+  color: var(--color-primary);
+}
+
+/* ---- Debug Mode ---- */
+.debug-badge {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  background: var(--rose-500);
+  color: var(--gray-0);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 100px;
+  letter-spacing: 0.04em;
+  animation: badgePulse 1.5s ease-in-out infinite;
+}
+
+.debug-panel {
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--rose-50);
+  border: 1.5px solid var(--rose-200);
+  border-radius: 12px;
+}
+.debug-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 13px;
+  color: var(--rose-700);
+  cursor: pointer;
+}
+.debug-toggle input {
+  accent-color: var(--rose-500);
 }
 
 /* ---- Responsive ---- */

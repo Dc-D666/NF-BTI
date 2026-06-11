@@ -31,7 +31,7 @@ export const fullQuestions: Question[] = [
   { id: 107, text: '在频道里看到有人求助（比如求资料），我会第一时间回复，就算我自己没有也会帮忙转发扩散。', dimension: 'E', direction: 1 },
   { id: 108, text: '我经常在频道里潜水——帖子都看但很少发言，除非特别戳我的话题才可能冒个泡。', dimension: 'I', direction: 1 },
   { id: 109, text: '放假回家前的最后一节晚自习，全班都在讨论假期计划，我通常是那个说得最起劲的人。', dimension: 'E', direction: 1 },
-  { id: 110, text: '放假前的晚自习大家聊得热火朝天时，我一般会低头假装在做作业来回避讨论。', dimension: 'I', direction: 1 },
+  { id: 110, text: '食堂三楼新出了菜品，如果朋友问"好吃吗"，我通常会说"还行"或"一般"，不太愿意展开描述具体的口感和味道。', dimension: 'I', direction: 1 },
   { id: 111, text: '如果有新生在频道里问"南方到底怎么样"，我会认真回复分享自己的感受和建议。', dimension: 'E', direction: 1 },
   { id: 112, text: '走在南方的校园里，如果迎面走来一个不太熟的同学，我会下意识掏书或看公告栏来避免打招呼。', dimension: 'I', direction: 1 },
 

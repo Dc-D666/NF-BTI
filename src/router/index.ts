@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 import TestView from '@/views/TestView.vue'
 import ResultView from '@/views/ResultView.vue'
+import FeedbackView from '@/views/FeedbackView.vue'
 import { useTestStore } from '@/stores/testStore'
 
 const router = createRouter({
@@ -19,7 +20,7 @@ const router = createRouter({
       beforeEnter: (to) => {
         const mode = to.params.mode as string
         const page = parseInt(to.params.page as string)
-        if (!['quick', 'full'].includes(mode)) return '/'
+        if (!['quick', 'full', 'debug'].includes(mode)) return '/'
         const maxPage = mode === 'quick' ? 3 : 12
         if (isNaN(page) || page < 1 || page > maxPage) {
           return `/test/${mode}/1`
@@ -32,12 +33,17 @@ const router = createRouter({
       component: ResultView,
       beforeEnter: (to) => {
         const mode = to.params.mode as string
-        if (!['quick', 'full'].includes(mode)) return '/'
+        if (!['quick', 'full', 'debug'].includes(mode)) return '/'
         const store = useTestStore()
         if (!store.isComplete || store.mode !== mode) {
           return '/'
         }
       },
+    },
+    {
+      path: '/feedback',
+      name: 'feedback',
+      component: FeedbackView,
     },
   ],
 })

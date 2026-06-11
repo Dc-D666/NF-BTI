@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router'
 import { useTestStore } from '@/stores/testStore'
-import { computed, watch, ref, nextTick } from 'vue'
+import { computed, watch, ref, nextTick, onMounted, onUnmounted } from 'vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -9,20 +9,78 @@ const store = useTestStore()
 
 const mode = computed(() => route.params.mode as string)
 const routePage = computed(() => parseInt(route.params.page as string) || 1)
+const isDebug = computed(() => mode.value === 'debug')
 
 // 内部页面状态，用于平滑切换动画
 const displayPage = ref(1)
 const slideDirection = ref<'next' | 'prev'>('next')
 const isTransitioning = ref(false)
 
+// Debug 自动答题定时器
+let debugTimer: ReturnType<typeof setTimeout> | null = null
+
 // 初始化：从路由参数同步到 store
 watch([mode, routePage], ([newMode, newPage]) => {
-  if (newMode && ['quick', 'full'].includes(newMode)) {
-    store.setMode(newMode as 'quick' | 'full')
+  if (newMode && ['quick', 'full', 'debug'].includes(newMode)) {
+    store.setMode(newMode as 'quick' | 'full' | 'debug')
     store.currentPage = newPage
     displayPage.value = newPage
   }
 }, { immediate: true })
+
+// Debug 模式：自动答题
+function runDebugAutoAnswer() {
+  if (!isDebug.value) return
+  const questions = store.currentQuestions
+  if (!questions.length) return
+
+  // 为当前页每道题随机选择答案
+  for (const q of questions) {
+    if (store.answers[q.id] !== undefined) continue
+    let value: number
+    if (isHiddenQuestion(q.id)) {
+      // 隐藏题：1-4 随机
+      value = Math.floor(Math.random() * 4) + 1
+    } else {
+      // 标准题：-3 到 +3 随机（排除0）
+      const values = [-3, -2, -1, 1, 2, 3]
+      value = values[Math.floor(Math.random() * values.length)]!
+    }
+    store.setAnswer(q.id, value)
+  }
+
+  // 延迟后自动下一页
+  debugTimer = setTimeout(() => {
+    if (store.isLastPage && store.canGoNext) {
+      store.calculateResult()
+      if (store.result) {
+        router.push(`/result/debug`)
+      }
+    } else if (store.canGoNext) {
+      goNext()
+      // 继续下一页的自动答题
+      nextTick(() => {
+        runDebugAutoAnswer()
+      })
+    }
+  }, 300)
+}
+
+onMounted(() => {
+  if (isDebug.value) {
+    // 延迟一点开始，让页面渲染完成
+    debugTimer = setTimeout(() => {
+      runDebugAutoAnswer()
+    }, 500)
+  }
+})
+
+onUnmounted(() => {
+  if (debugTimer) {
+    clearTimeout(debugTimer)
+    debugTimer = null
+  }
+})
 
 function selectOption(questionId: number, value: number) {
   store.setAnswer(questionId, value)
@@ -97,10 +155,12 @@ function isHiddenQuestion(qid: number): boolean {
     <!-- 顶部导航 -->
     <header class="header">
       <button class="logo-btn" @click="router.push('/')">
-        <span class="logo-text">NF-BTI</span>
+        <span class="logo-text">NFTI</span>
       </button>
       <div class="progress-info">
-        <span class="mode-tag">{{ mode === 'quick' ? '快速' : '完整' }}</span>
+        <span class="mode-tag" :class="{ debug: isDebug }">
+          {{ isDebug ? 'DEBUG' : mode === 'quick' ? '快速' : '完整' }}
+        </span>
         <span class="page-num">{{ displayPage }} / {{ store.totalPages }}</span>
       </div>
     </header>
@@ -252,6 +312,10 @@ function isHiddenQuestion(qid: number): boolean {
   background: var(--color-primary-soft);
   color: var(--color-primary);
   letter-spacing: 0.02em;
+}
+.mode-tag.debug {
+  background: var(--rose-500);
+  color: var(--gray-0);
 }
 .page-num {
   font-size: 14px;

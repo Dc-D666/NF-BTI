@@ -4,8 +4,8 @@ import type { TestMode, UserAnswers, TestResult } from '@/types'
 import { quickQuestions, fullQuestions, questions } from '@/data/questions'
 import { getQuickType, getFullType } from '@/data/personalities'
 
-const STORAGE_KEY_QUICK = 'nfbti_quick_progress'
-const STORAGE_KEY_FULL = 'nfbti_full_progress'
+const STORAGE_KEY_QUICK = 'nfti_quick_progress'
+const STORAGE_KEY_FULL = 'nfti_full_progress'
 
 export const useTestStore = defineStore('test', () => {
   // State
@@ -15,7 +15,7 @@ export const useTestStore = defineStore('test', () => {
   const isComplete = ref(false)
   const result = ref<TestResult | null>(null)
 
-  // 根据模式获取题目数组
+  // 根据模式获取题目数组（debug 模式使用 fullQuestions）
   const activeQuestions = computed(() => {
     if (!mode.value) return []
     return mode.value === 'quick' ? quickQuestions : fullQuestions
@@ -107,7 +107,7 @@ export const useTestStore = defineStore('test', () => {
       scores[q.dimension] += score
     }
 
-    // 判定人格类型
+    // 判定人格类型（debug 模式与 full 模式共用相同逻辑）
     let type
     if (mode.value === 'quick') {
       type = getQuickType({ E: scores.E, I: scores.I, S: scores.S, N: scores.N })
@@ -134,9 +134,9 @@ export const useTestStore = defineStore('test', () => {
     clearProgress()
   }
 
-  // localStorage
+  // localStorage（debug 模式跳过，避免污染正常进度）
   function saveProgress() {
-    if (!mode.value) return
+    if (!mode.value || mode.value === 'debug') return
     const key = mode.value === 'quick' ? STORAGE_KEY_QUICK : STORAGE_KEY_FULL
     const data = {
       mode: mode.value,

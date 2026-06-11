@@ -12,7 +12,7 @@ import { RouterView } from 'vue-router'
 
 <style>
 /* ============================================================
-   NF-BTI Design System — Based on Impeccable Principles
+   NFTI Design System — Based on Impeccable Principles
    ============================================================ */
 
 /* ---- Color Tokens (OKLCH-inspired, manually tuned) ---- */
