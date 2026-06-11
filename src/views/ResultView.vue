@@ -14,6 +14,18 @@ const mode = computed(() => route.params.mode as string)
 const result = computed(() => store.result)
 const isDebug = computed(() => mode.value === 'debug')
 
+// Vite 构建时预先加载所有插图，生成正确的哈希路径
+const illustrationMap: Record<string, string> = import.meta.glob('/src/assets/*.jpg', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}) as Record<string, string>
+
+function getIllustrationUrl(path: string | undefined): string | undefined {
+  if (!path) return undefined
+  return illustrationMap[path]
+}
+
 // 计数
 const completeCount = ref(0)
 const typeCount = ref(0)
@@ -152,7 +164,7 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
 
         <!-- 插图放在CODE和NAME下方 -->
         <div class="type-hero">
-          <img v-if="result.type.illustration" :src="result.type.illustration" :alt="result.type.name" class="type-illustration" />
+          <img v-if="result.type.illustration" :src="getIllustrationUrl(result.type.illustration)" :alt="result.type.name" class="type-illustration" />
           <div v-else class="type-illustration-placeholder">
             <span>{{ result.type.code[0] }}</span>
           </div>
