@@ -3,6 +3,8 @@ import { useRouter } from 'vue-router'
 import { useTestStore } from '@/stores/testStore'
 import { counter, getLastCounterError } from '@/utils/counter'
 import { ref, onMounted } from 'vue'
+import qqQrImg from '@/assets/QQ.jpg'
+import wxQrImg from '@/assets/WX.jpg'
 
 const router = useRouter()
 const store = useTestStore()
@@ -11,6 +13,8 @@ const resumeMode = ref<'quick' | 'full' | 'debug' | null>(null)
 const resumePage = ref(1)
 const showContributors = ref(false)
 const showChangelog = ref(false)
+
+
 
 // Debug 模式状态
 const debugEnabled = ref(false)
@@ -136,9 +140,28 @@ function dismissModal() {
         </label>
       </div>
 
+      <!-- 扫码加入社区 -->
+      <div class="community-section">
+        <p class="community-text">测完别急着走，扫码回「家」聊聊你的人格</p>
+        <div class="qr-grid">
+          <div class="qr-item">
+            <div class="qr-frame">
+              <img :src="qqQrImg" alt="QQ频道二维码" class="qr-image" />
+            </div>
+            <span class="qr-label">QQ 扫码</span>
+          </div>
+          <div class="qr-item">
+            <div class="qr-frame">
+              <img :src="wxQrImg" alt="微信群二维码" class="qr-image" />
+            </div>
+            <span class="qr-label">微信扫码</span>
+          </div>
+        </div>
+      </div>
+
       <!-- 底部信息栏 -->
       <footer class="footer-bar">
-        <span class="footer-version">v1.2-alpha</span>
+        <span class="footer-version">v1.3-alpha</span>
         <span class="footer-divider">·</span>
         <button class="footer-link" @click="showContributors = true">贡献者</button>
         <span class="footer-divider">·</span>
@@ -173,14 +196,24 @@ function dismissModal() {
         <div class="changelog-list">
           <div class="changelog-item">
             <div class="changelog-version">
-              <span class="version-tag">v1.2-alpha</span>
+              <span class="version-tag">v1.3-alpha</span>
               <span class="version-date">当前版本</span>
             </div>
             <ul>
+              <li>引入AI学长问答功能，基于人格类型提供个性化建议</li>
+              <li>支持流式输出</li>
+            </ul>
+          </div>
+          <div class="changelog-item">
+            <div class="changelog-version">
+              <span class="version-tag">v1.2-alpha</span>
+            </div>
+            <ul>
               <li>完成 16 种标准人格的插图设计与展示</li>
-              <li>新增人格关系分析</li>
-              <li>结果页全新布局</li>
-              <li>反馈入口新增类型</li>
+              <li>新增人格关系分析（绝配 / 天敌 / 孽缘 / 专克）</li>
+              <li>结果页全新布局：插图作为视觉中心，NFTI 四字母便利贴</li>
+              <li>删除 ThreeScene 3D 黑块，优化页面视觉纯净度</li>
+              <li>反馈入口新增「人格建议」与「插图建议」类型</li>
             </ul>
           </div>
           <div class="changelog-item">
@@ -188,10 +221,11 @@ function dismissModal() {
               <span class="version-tag">v1.1-alpha</span>
             </div>
             <ul>
-              <li>完成人格数据全面重构，19 种人格名称与描述更新</li>
-              <li>新增反馈入口，支持 Bug 反馈与功能建议</li>
+              <li>完成人格数据全面重构（v2 文档），19 种人格名称与描述更新</li>
+              <li>新增反馈入口（EmailJS），支持 Bug 反馈与功能建议</li>
               <li>优化结果页分数计算与维度解析展示</li>
               <li>四维解析条目全面校园化表述</li>
+              <li>新增隐藏款解锁条件提示</li>
             </ul>
           </div>
           <div class="changelog-item">
@@ -201,12 +235,12 @@ function dismissModal() {
             <ul>
               <li>完成 48 道完整测试题目设计与 12 道快速测试题目设计</li>
               <li>完成 16 种标准人格 + 3 款隐藏人格的基础设计</li>
-              <li>搭建双模式测试框架</li>
+              <li>搭建双模式测试框架（快速测试 / 完整测试）</li>
               <li>基于南方中学真实校园场景构建八维字母体系</li>
             </ul>
           </div>
         </div>
-        <div class="modal-actions">
+        <div class="changelog-footer">
           <button class="btn-dismiss" @click="showChangelog = false">关闭</button>
         </div>
       </div>
@@ -527,6 +561,55 @@ function dismissModal() {
   opacity: 0.7;
 }
 
+/* ---- Community Section ---- */
+.community-section {
+  margin-top: var(--space-8);
+  margin-bottom: var(--space-4);
+  text-align: center;
+}
+.community-text {
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--gray-500);
+  margin-bottom: var(--space-4);
+}
+.qr-grid {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-5);
+}
+.qr-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+.qr-frame {
+  width: 140px;
+  height: 140px;
+  border-radius: 16px;
+  background: var(--gray-0);
+  border: 1.5px solid var(--color-border);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  padding: var(--space-2);
+  transition: transform 200ms var(--ease-out-quint), box-shadow 200ms ease;
+}
+.qr-frame:hover {
+  transform: scale(1.03);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+.qr-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  object-fit: contain;
+}
+.qr-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gray-400);
+}
+
 /* ---- Modal ---- */
 .modal-overlay {
   position: fixed;
@@ -616,18 +699,45 @@ function dismissModal() {
 .changelog-modal {
   max-width: 440px;
   max-height: 70vh;
-  overflow-y: auto;
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
 }
 .changelog-modal h3 {
   text-align: center;
-  margin-bottom: var(--space-5);
+  margin-bottom: 0;
+  padding: var(--space-6) var(--space-6) var(--space-4);
+  flex-shrink: 0;
 }
 .changelog-list {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-  margin-bottom: var(--space-6);
+  padding: 0 var(--space-6);
+  overflow-y: auto;
+  flex: 1;
+}
+.changelog-footer {
+  padding: var(--space-4) var(--space-6) var(--space-6);
+  flex-shrink: 0;
+  border-top: 1px solid var(--color-border);
+}
+.changelog-footer .btn-dismiss {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--gray-100);
+  color: var(--gray-600);
+  border: none;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+.changelog-footer .btn-dismiss:hover {
+  background: var(--gray-200);
 }
 .changelog-item {
   padding: var(--space-4);

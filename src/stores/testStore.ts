@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { TestMode, UserAnswers, TestResult } from '@/types'
+import type { ChatMessage } from '@/services/aiChat'
 import { quickQuestions, fullQuestions, questions } from '@/data/questions'
 import { getQuickType, getFullType } from '@/data/personalities'
 
 const STORAGE_KEY_QUICK = 'nfti_quick_progress'
 const STORAGE_KEY_FULL = 'nfti_full_progress'
+const STORAGE_KEY_AI_CHAT = 'nfti_ai_chat_history'
 
 export const useTestStore = defineStore('test', () => {
   // State
@@ -14,6 +16,7 @@ export const useTestStore = defineStore('test', () => {
   const answers = ref<UserAnswers>({})
   const isComplete = ref(false)
   const result = ref<TestResult | null>(null)
+  const aiChatHistory = ref<ChatMessage[]>([])
 
   // 根据模式获取题目数组（debug 模式使用 fullQuestions）
   const activeQuestions = computed(() => {
@@ -131,7 +134,43 @@ export const useTestStore = defineStore('test', () => {
     answers.value = {}
     isComplete.value = false
     result.value = null
+    aiChatHistory.value = []
     clearProgress()
+    clearAiChatHistory()
+  }
+
+  // AI 对话历史记录
+  function saveAiChatHistory(messages: ChatMessage[]) {
+    aiChatHistory.value = messages
+    try {
+      localStorage.setItem(STORAGE_KEY_AI_CHAT, JSON.stringify(messages))
+    } catch {
+      console.warn('localStorage 不可用，AI 对话历史仅保存在内存中')
+    }
+  }
+
+  function loadAiChatHistory(): ChatMessage[] {
+    if (aiChatHistory.value.length > 0) return aiChatHistory.value
+    try {
+      const data = localStorage.getItem(STORAGE_KEY_AI_CHAT)
+      if (data) {
+        const parsed = JSON.parse(data) as ChatMessage[]
+        aiChatHistory.value = parsed
+        return parsed
+      }
+    } catch {
+      console.warn('AI 对话历史读取失败')
+    }
+    return []
+  }
+
+  function clearAiChatHistory() {
+    aiChatHistory.value = []
+    try {
+      localStorage.removeItem(STORAGE_KEY_AI_CHAT)
+    } catch {
+      // ignore
+    }
   }
 
   // localStorage（debug 模式跳过，避免污染正常进度）
@@ -226,5 +265,9 @@ export const useTestStore = defineStore('test', () => {
     loadProgress,
     clearProgress,
     hasUnfinishedProgress,
+    aiChatHistory,
+    saveAiChatHistory,
+    loadAiChatHistory,
+    clearAiChatHistory,
   }
 })

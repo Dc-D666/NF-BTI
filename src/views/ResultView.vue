@@ -5,6 +5,7 @@ import { counter } from '@/utils/counter'
 import { getRelations } from '@/data/relationships'
 import { computed, onMounted, ref } from 'vue'
 import type { RelationEntry } from '@/data/relationships'
+import AiChatModal from '@/components/AiChatModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -29,6 +30,7 @@ function getIllustrationUrl(path: string | undefined): string | undefined {
 // 计数
 const completeCount = ref(0)
 const typeCount = ref(0)
+const showAiChat = ref(false)
 
 // 人格关系数据
 const relations = computed<RelationEntry[]>(() => {
@@ -148,7 +150,7 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
 
       <!-- 人格类型展示 -->
       <div class="type-display" :class="{ hidden: result.type.isHidden }">
-        <!-- NFTI 四字母便利贴 -->
+        <!-- NFTI 四字母便利贴（仅完整测试显示） -->
         <div v-if="result.mode !== 'quick' && result.type.fourLetter && !result.type.isHidden" class="nfti-sticker">
           <div class="sticker-tape"></div>
           <div class="sticker-content">
@@ -160,10 +162,11 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
         <div class="type-meta-overlay">
           <div class="type-code">{{ result.type.code }}</div>
           <div class="type-name">{{ result.type.name }}</div>
+          <div v-if="result.type.code === 'BANDIT'" class="type-subtitle">该梗出自某强基班班主任对某年级主任取的外号</div>
         </div>
 
-        <!-- 插图放在CODE和NAME下方 -->
-        <div class="type-hero">
+        <!-- 插图放在CODE和NAME下方（仅完整测试显示） -->
+        <div v-if="result.mode !== 'quick'" class="type-hero">
           <img v-if="result.type.illustration" :src="getIllustrationUrl(result.type.illustration)" :alt="result.type.name" class="type-illustration" />
           <div v-else class="type-illustration-placeholder">
             <span>{{ result.type.code[0] }}</span>
@@ -188,7 +191,7 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
       <!-- 详细解析 -->
       <div v-if="result.type.detail" class="type-detail">
         <h3>你是这样的人</h3>
-        <p>{{ result.type.detail }}</p>
+        <p>{{ result.mode === 'quick' ? (result.type.detail.length > 100 ? result.type.detail.slice(0, 100) + '...' : result.type.detail) : result.type.detail }}</p>
       </div>
 
       <!-- 计数信息 -->
@@ -268,17 +271,66 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
       <!-- 快速测试引导 -->
       <div v-if="result.mode === 'quick'" class="upgrade-prompt">
         <div class="prompt-icon" aria-hidden="true">✦</div>
-        <p class="upgrade-limit">快速测试仅通过 12 道题评估你的基础倾向，结果为 4 种概括型人格之一。</p>
-        <p>完整测试（48 题）将解锁 16 种标准人格 + 3 款隐藏人格，并获得四维深度解析。</p>
+        <h3 class="upgrade-title">解锁更完整的自己</h3>
+        <div class="compare-table">
+          <div class="compare-header">
+            <div class="compare-col">维度</div>
+            <div class="compare-col">快速测试</div>
+            <div class="compare-col highlight">完整测试</div>
+          </div>
+          <div class="compare-row">
+            <div class="compare-col">题目数量</div>
+            <div class="compare-col">12 题</div>
+            <div class="compare-col highlight">48 题</div>
+          </div>
+          <div class="compare-row">
+            <div class="compare-col">人格精度</div>
+            <div class="compare-col">4 种概括型</div>
+            <div class="compare-col highlight">16 种标准 + 3 款隐藏</div>
+          </div>
+          <div class="compare-row">
+            <div class="compare-col">维度解析</div>
+            <div class="compare-col">基础倾向</div>
+            <div class="compare-col highlight">四维深度解析</div>
+          </div>
+          <div class="compare-row">
+            <div class="compare-col">人格插图</div>
+            <div class="compare-col">—</div>
+            <div class="compare-col highlight">专属插画展示</div>
+          </div>
+          <div class="compare-row">
+            <div class="compare-col">关系图谱</div>
+            <div class="compare-col">—</div>
+            <div class="compare-col highlight">绝配 / 天敌 / 孽缘 / 专克</div>
+          </div>
+          <div class="compare-row">
+            <div class="compare-col">AI 顾问</div>
+            <div class="compare-col">—</div>
+            <div class="compare-col highlight">个性化深度问答</div>
+          </div>
+        </div>
         <button class="upgrade-btn" @click="router.push('/test/full/1')">
           开始完整测试
         </button>
+
+        <p class="upgrade-free"><br>全部功能免费、无广告</p>
+        <p class="upgrade-free">动动手指，邀请同学加入频道一起玩吧~</p>
       </div>
 
       <!-- 人格关系图谱 -->
       <div v-if="relations.length > 0" class="relations-section">
         <h3>人格关系图谱</h3>
-        <div class="relations-list">
+        <div v-if="result.mode === 'quick'" class="relations-mystery">
+          <div class="mystery-card" v-for="n in 4" :key="n">
+            <div class="mystery-badge">???</div>
+            <div class="mystery-target">
+              <span class="mystery-nfti">????</span>
+              <span class="mystery-name">???</span>
+            </div>
+            <p class="mystery-desc">完成完整测试解锁人格关系分析</p>
+          </div>
+        </div>
+        <div v-else class="relations-list">
           <div
             v-for="(rel, idx) in relations"
             :key="idx"
@@ -295,6 +347,24 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
         </div>
       </div>
 
+      <!-- AI 对话入口（仅完整测试显示） -->
+      <div v-if="result.mode !== 'quick'" class="ai-section">
+        <div class="ai-card" @click="showAiChat = true">
+          <div class="ai-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+              <line x1="12" x2="12.01" y1="17" y2="17"/>
+            </svg>
+          </div>
+          <div class="ai-text">
+            <div class="ai-title">问问 AI 学长</div>
+            <div class="ai-desc">基于你的 {{ result.type.name }} 人格，获取个性化建议</div>
+          </div>
+          <div class="ai-arrow" aria-hidden="true">→</div>
+        </div>
+      </div>
+
       <!-- 操作按钮 -->
       <div class="actions">
         <button v-if="!isDebug" class="action-btn share" @click="share">
@@ -308,10 +378,98 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
         </button>
       </div>
     </div>
+
+    <!-- AI 对话弹窗 -->
+    <AiChatModal
+      v-if="showAiChat && result"
+      :personality-code="result.type.code"
+      :personality-name="result.type.name"
+      :four-letter="result.type.fourLetter"
+      :description="result.type.description"
+      :detail="result.type.detail || ''"
+      :scores="result.scores"
+      :mode="result.mode"
+      @close="showAiChat = false"
+    />
   </div>
 </template>
 
 <style scoped>
+/* ---- AI Section ---- */
+.ai-section {
+  margin-bottom: var(--space-6);
+}
+.ai-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: linear-gradient(135deg, var(--indigo-600), var(--indigo-700));
+  border-radius: 20px;
+  color: var(--color-text-inverse);
+  cursor: pointer;
+  transition: transform 200ms var(--ease-out-quint), box-shadow 200ms ease;
+  position: relative;
+  overflow: hidden;
+}
+.ai-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 200px;
+  height: 200px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.ai-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(79, 70, 229, 0.3);
+}
+.ai-card:active {
+  transform: translateY(0) scale(0.98);
+}
+.ai-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 14px;
+  flex-shrink: 0;
+  backdrop-filter: blur(4px);
+}
+.ai-icon svg {
+  color: var(--color-text-inverse);
+}
+.ai-text {
+  flex: 1;
+  min-width: 0;
+}
+.ai-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+.ai-desc {
+  font-size: 13px;
+  opacity: 0.8;
+  line-height: 1.5;
+}
+.ai-arrow {
+  font-size: 20px;
+  opacity: 0.6;
+  transition: opacity 200ms ease, transform 200ms var(--ease-out-quint);
+}
+.ai-card:hover .ai-arrow {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+/* ---- Result Page Base ---- */
 .result-page {
   min-height: 100vh;
   background: var(--color-bg);
@@ -460,6 +618,12 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
   font-weight: 700;
   color: var(--color-primary);
   margin-bottom: var(--space-2);
+}
+.type-subtitle {
+  font-size: 12px;
+  color: var(--gray-400);
+  font-style: italic;
+  margin-top: var(--space-1);
 }
 .type-four-letter {
   font-family: var(--font-mono);
@@ -761,10 +925,47 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
   margin-bottom: var(--space-4);
   opacity: 0.95;
 }
-.upgrade-prompt .upgrade-limit {
+.upgrade-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: var(--space-4);
+  position: relative;
+  z-index: 1;
+}
+.compare-table {
+  background: rgba(255,255,255,0.1);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: var(--space-5);
+  position: relative;
+  z-index: 1;
+}
+.compare-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.4fr;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: rgba(255,255,255,0.1);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.compare-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.4fr;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
   font-size: 13px;
-  opacity: 0.75;
-  margin-bottom: var(--space-2);
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.compare-col {
+  text-align: left;
+}
+.compare-col.highlight {
+  font-weight: 600;
+  color: #fef3c7;
 }
 .counter-info {
   text-align: center;
@@ -799,6 +1000,14 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
 }
 .upgrade-btn:active {
   transform: translateY(0);
+}
+.upgrade-free {
+  font-size: 12px;
+  opacity: 0.6;
+  margin-top: var(--space-3);
+  margin-bottom: 0;
+  position: relative;
+  z-index: 1;
 }
 
 /* ---- Actions ---- */
@@ -920,6 +1129,56 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
   font-size: 13px;
   line-height: 1.7;
   color: var(--gray-500);
+  margin: 0;
+}
+
+/* ---- Mystery Relations (Quick Mode) ---- */
+.relations-mystery {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.mystery-card {
+  padding: var(--space-4);
+  border-radius: 16px;
+  border: 1.5px dashed var(--color-border);
+  background: var(--gray-50);
+  text-align: center;
+}
+.mystery-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-bottom: var(--space-2);
+  background: var(--gray-200);
+  color: var(--gray-400);
+}
+.mystery-target {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.mystery-nfti {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-300);
+  letter-spacing: 0.08em;
+}
+.mystery-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gray-300);
+}
+.mystery-desc {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--gray-400);
   margin: 0;
 }
 
