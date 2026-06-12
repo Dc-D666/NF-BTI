@@ -22,7 +22,7 @@ export const quickQuestions: Question[] = [
 // 完整测试：48道题，独立编号 101-148
 export const fullQuestions: Question[] = [
   // === E/I 维度 (Q101-Q112) ===
-  { id: 101, text: '我喜欢经常去找老师和同学问学习上的问题。', dimension: 'E', direction: 1 },
+  { id: 101, text: '我喜欢经常去找老师问学习上的问题。', dimension: 'E', direction: 1 },
   { id: 102, text: '下课铃响之后我通常会等大多数人走了才慢悠悠地去食堂。', dimension: 'I', direction: 1 },
   { id: 103, text: '元旦晚会或者运动会开幕式的时候，如果班级需要有人出节目或代表发言，我会很积极地报名参加。', dimension: 'E', direction: 1 },
   { id: 104, text: '军训期间休息间隙教官让大家自由活动时，我通常会在旁边安静待着，不太参与周围人的打闹。', dimension: 'I', direction: 1 },
@@ -37,9 +37,9 @@ export const fullQuestions: Question[] = [
 
   // === S/N 维度 (Q113-Q124) ===
   { id: 113, text: '我能清楚记得食堂哪个窗口的菜最好吃、哪些菜隔几天出一次——这些细节我都记得很清楚。', dimension: 'S', direction: 1 },
-  { id: 114, text: '走在校园里看到一棵树或一朵云，我经常会停下来发呆——它让我突然想到了一些很远的事情。', dimension: 'N', direction: 1 },
-  { id: 115, text: '写数学题的时候我喜欢把每一步的计算过程都写得清清楚楚，哪怕老师不要求也会标上序号。', dimension: 'S', direction: 1 },
-  { id: 116, text: '上课听讲的时候经常出现这种情况：老师说了一句术语，我的思绪已经飘到了这个词在其他领域的含义。', dimension: 'N', direction: 1 },
+  { id: 114, text: '走在校园里看到一棵树或一朵云，我经常会停下来发呆——它让我突然想到了一些很远的事情（我以前见过这种形状的吗）。', dimension: 'N', direction: 1 },
+  { id: 115, text: '写数学题的时候我喜欢把每一步的计算过程都写得清清楚楚，哪怕老师不要求也会标上序号①②③。', dimension: 'S', direction: 1 },
+  { id: 116, text: '上课听讲的时候经常出现这种情况：老师说了一句术语，我的思绪已经飘到了这个词在其他领域的含义。（香蕉 vs 相交）', dimension: 'N', direction: 1 },
   { id: 117, text: '对于"今天吃什么"这个问题，我的第一反应是打开相册翻看之前吃过的东西来决定。', dimension: 'S', direction: 1 },
   { id: 118, text: '做研究性学习选题的时候，比起调查现实课题，我更想选一个没人做过的新方向。', dimension: 'N', direction: 1 },
   { id: 119, text: '描述一次研学活动的话，我会按时间顺序说：集合→坐大巴→到达→拓展项目→回学校。', dimension: 'S', direction: 1 },
@@ -64,16 +64,16 @@ export const fullQuestions: Question[] = [
   { id: 136, text: '即使某位老师的课教得很好，但如果ta曾经在班里说过让学生很受伤的话，我依然很难产生好感。', dimension: 'F', direction: 1 },
 
   // === J/P 维度 (Q137-Q148) ===
-  { id: 137, text: '我的寒暑假作业会在放假第一天就列好完成计划表——哪天做哪些科目、每天多少量。', dimension: 'J', direction: 1 },
-  { id: 138, text: '我的寒暑假作业通常是：前十天完全不动，最后三天进入狂暴模式。', dimension: 'P', direction: 1 },
+  { id: 137, text: '我去食堂有自己的固定策略——知道什么时间去哪个楼层人最少、哪个窗口的菜几点出锅，不会到了再临时纠结。', dimension: 'J', direction: 1 },
+  { id: 138, text: '我去小卖部从来不列清单——本来只想买瓶水，结果结账的时候莫名其妙多了一堆零食。', dimension: 'P', direction: 1 },
   { id: 139, text: '每天早上的时间我有固定流程：闹钟响→关闹钟→赖床3分钟→洗漱→吃早饭→出门，基本不变。', dimension: 'J', direction: 1 },
   { id: 140, text: '每天早上全看状态——有时能早起跑两圈操场，有时踩着铃声冲进教室，没有两天是一样的。', dimension: 'P', direction: 1 },
   { id: 141, text: '我的书桌永远整整齐齐——课本按高度排列、试卷分类、笔袋固定放在右上角。', dimension: 'J', direction: 1 },
-  { id: 142, text: '假期最后一周我的状态基本是这样的：前六天完全没碰作业，最后一天晚上一边崩溃一边疯狂补。', dimension: 'P', direction: 1 },
+  { id: 142, text: '我的寝室座位和柜子永远处于半失控状态——东西用完随手一放，每次找东西都像在考古。', dimension: 'P', direction: 1 },
   { id: 143, text: '选校本课之前我会把每门课的大纲、考核方式、往届评价都研究一遍，选定后就专心上好这一门。', dimension: 'J', direction: 1 },
   { id: 144, text: '如果同时有三个社团我都感兴趣，我会全部报名——到时候有空去哪个就去哪个，反正试试又不亏。', dimension: 'P', direction: 1 },
   { id: 145, text: '高一开学前我已经把需要准备的东西列了一张清单：材料、生活用品、文具、书本——全部提前打包好了。', dimension: 'J', direction: 1 },
-  { id: 146, text: '"考前突击"是我的标准操作——考前一晚通宵背书或者早上五点起来猛刷题，效果另说。', dimension: 'P', direction: 1 },
+  { id: 146, text: '学校的比赛或活动我经常到报名截止前最后一刻才决定参不参加——截止日期就是我的第一生产力。', dimension: 'P', direction: 1 },
   { id: 147, text: '晚自习结束后的安排是固定的：回寝室→洗漱→整理第二天的东西→跟室友简单聊两句→准时睡觉。', dimension: 'J', direction: 1 },
   { id: 148, text: '周末在家的时候我的安排完全看心情——有时候睡到中午，有时候兴起把衣服全洗了，有时候发一下午呆。', dimension: 'P', direction: 1 },
 

@@ -6,6 +6,7 @@ import { getRelations } from '@/data/relationships'
 import { computed, onMounted, ref } from 'vue'
 import type { RelationEntry } from '@/data/relationships'
 import AiChatModal from '@/components/AiChatModal.vue'
+import ShareModal from '@/components/ShareModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -16,21 +17,34 @@ const result = computed(() => store.result)
 const isDebug = computed(() => mode.value === 'debug')
 
 // Vite 构建时预先加载所有插图，生成正确的哈希路径
-const illustrationMap: Record<string, string> = import.meta.glob('/src/assets/*.jpg', {
+// 开发环境下 glob 的 key 可能是相对路径，需要统一处理
+const rawIllustrationMap: Record<string, string> = import.meta.glob('/src/assets/*.{jpg,png}', {
   eager: true,
   query: '?url',
   import: 'default',
 }) as Record<string, string>
 
+// 统一 key 格式：确保以 /src/assets/ 开头
+const illustrationMap: Record<string, string> = {}
+for (const [key, value] of Object.entries(rawIllustrationMap)) {
+  const normalizedKey = key.startsWith('/src/assets/') ? key : `/src/assets/${key.split('/assets/').pop()}`
+  illustrationMap[normalizedKey] = value
+}
+
 function getIllustrationUrl(path: string | undefined): string | undefined {
   if (!path) return undefined
-  return illustrationMap[path]
+  // 支持 personalities.ts 中存储的 /src/assets/xxx.png 格式
+  if (illustrationMap[path]) return illustrationMap[path]
+  // 兼容不带 /src 前缀的格式
+  const altPath = path.startsWith('/src/') ? path.slice(4) : `/src${path}`
+  return illustrationMap[altPath]
 }
 
 // 计数
 const completeCount = ref(0)
 const typeCount = ref(0)
 const showAiChat = ref(false)
+const showShare = ref(false)
 
 // 人格关系数据
 const relations = computed<RelationEntry[]>(() => {
@@ -70,7 +84,7 @@ function exitDebug() {
 }
 
 function share() {
-  alert('当前处于内测版本，请不要外传本项目。')
+  showShare.value = true
 }
 
 const dimensionPairs = computed(() => {
@@ -301,7 +315,7 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
           <div class="compare-row">
             <div class="compare-col">关系图谱</div>
             <div class="compare-col">—</div>
-            <div class="compare-col highlight">绝配 / 天敌 / 孽缘 / 专克</div>
+            <div class="compare-col highlight">绝配 / 天敌 / 专克</div>
           </div>
           <div class="compare-row">
             <div class="compare-col">AI 顾问</div>
@@ -367,11 +381,8 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
 
       <!-- 操作按钮 -->
       <div class="actions">
-        <button v-if="!isDebug" class="action-btn share" @click="share">
+        <button class="action-btn share" @click="share">
           <span aria-hidden="true">↗</span> 分享结果
-        </button>
-        <button v-if="isDebug" class="action-btn share" @click="exitDebug">
-          <span aria-hidden="true">←</span> 退出 Debug
         </button>
         <button class="action-btn restart" @click="restart">
           <span aria-hidden="true">↻</span> {{ isDebug ? '重新测试（Debug）' : '重新测试' }}
@@ -391,13 +402,24 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
       :mode="result.mode"
       @close="showAiChat = false"
     />
+
+    <!-- 分享弹窗 -->
+    <ShareModal
+      v-if="result"
+      :show="showShare"
+      :mode="result.mode"
+      :type="result.type"
+      :scores="result.scores"
+      :illustration-url="getIllustrationUrl(result.type.illustration)"
+      @close="showShare = false"
+    />
   </div>
 </template>
 
 <style scoped>
 /* ---- AI Section ---- */
 .ai-section {
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-3);
 }
 .ai-card {
   display: flex;
@@ -478,7 +500,7 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
 .content {
   max-width: 560px;
   margin: 0 auto;
-  padding: var(--space-6) var(--space-5) var(--space-12);
+  padding: var(--space-4) var(--space-4) var(--space-8);
 }
 
 /* ---- Back Button ---- */
@@ -486,7 +508,7 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-4);
 }
 .back-btn {
   display: inline-flex;
@@ -528,7 +550,7 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-text-muted);
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-3);
 }
 .mode-label.debug {
   color: var(--rose-500);
@@ -537,8 +559,8 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
 
 /* ---- Type Display ---- */
 .type-display {
-  margin-bottom: var(--space-6);
-  padding: var(--space-8) var(--space-5) var(--space-6);
+  margin-bottom: var(--space-3);
+  padding: var(--space-4) var(--space-4) var(--space-3);
   border-radius: 28px;
   background: linear-gradient(180deg, var(--indigo-50) 0%, var(--gray-0) 40%);
   border: 1.5px solid var(--color-border);
@@ -568,23 +590,26 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
   justify-content: center;
   position: relative;
   z-index: 1;
-  margin: var(--space-2) 0 var(--space-4);
+  margin: 4px 0;
 }
 .type-illustration {
-  width: 320px;
-  height: 320px;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  max-height: 320px;
   object-fit: contain;
-  border-radius: 28px;
-  filter: drop-shadow(0 12px 32px rgba(0,0,0,0.1));
+  border-radius: 16px;
+  filter: drop-shadow(0 8px 24px rgba(0,0,0,0.08));
   transition: transform 300ms var(--ease-out-quint);
 }
 .type-illustration:hover {
   transform: scale(1.02);
 }
 .type-illustration-placeholder {
-  width: 320px;
+  max-width: 100%;
+  width: 480px;
   height: 320px;
-  border-radius: 28px;
+  border-radius: 16px;
   background: linear-gradient(135deg, var(--indigo-100), var(--indigo-50));
   display: flex;
   align-items: center;
@@ -601,7 +626,7 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
 .type-meta-overlay {
   position: relative;
   z-index: 1;
-  margin-top: var(--space-2);
+  margin-top: var(--space-1);
 }
 .type-code {
   font-family: var(--font-display);
@@ -609,7 +634,7 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
   font-weight: 700;
   color: var(--gray-900);
   line-height: 1;
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-1);
   letter-spacing: -0.03em;
 }
 .type-name {
@@ -617,13 +642,14 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
   font-size: 32px;
   font-weight: 700;
   color: var(--color-primary);
-  margin-bottom: var(--space-2);
+  margin-bottom: 0;
 }
 .type-subtitle {
   font-size: 12px;
   color: var(--gray-400);
   font-style: italic;
-  margin-top: var(--space-1);
+  margin-top: 2px;
+  margin-bottom: 0;
 }
 .type-four-letter {
   font-family: var(--font-mono);
@@ -718,8 +744,8 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
   background: var(--gray-0);
   border: 1px solid var(--color-border);
   border-radius: 20px;
-  padding: var(--space-6);
-  margin-bottom: var(--space-6);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-3);
   position: relative;
 }
 .type-description::before {
@@ -746,15 +772,15 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
   background: var(--gray-0);
   border: 1px solid var(--color-border);
   border-radius: 20px;
-  padding: var(--space-6);
-  margin-bottom: var(--space-6);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-3);
 }
 .type-detail h3 {
   font-family: var(--font-display);
   font-size: 16px;
   font-weight: 700;
   color: var(--color-primary);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-2);
   letter-spacing: 0.02em;
 }
 .type-detail p {
@@ -769,19 +795,19 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
   background: var(--gray-0);
   border: 1px solid var(--color-border);
   border-radius: 20px;
-  padding: var(--space-6);
-  margin-bottom: var(--space-6);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-3);
 }
 .dimensions h3 {
   font-family: var(--font-display);
   font-size: 18px;
   font-weight: 700;
   color: var(--gray-900);
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-3);
 }
 
 .dimension-row {
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-3);
   animation: dimIn 400ms var(--ease-out-expo) both;
   animation-delay: calc(var(--i, 0) * 100ms + 200ms);
 }
@@ -896,9 +922,9 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
 .upgrade-prompt {
   background: linear-gradient(135deg, var(--indigo-600), var(--indigo-700));
   border-radius: 20px;
-  padding: var(--space-6);
+  padding: var(--space-4);
   text-align: center;
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-4);
   color: var(--color-text-inverse);
   position: relative;
   overflow: hidden;
@@ -969,10 +995,10 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
 }
 .counter-info {
   text-align: center;
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-3) var(--space-4);
   background: var(--color-bg-soft);
   border-radius: 16px;
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-4);
 }
 .counter-info p {
   font-size: 13px;
@@ -1014,6 +1040,7 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
 .actions {
   display: flex;
   gap: var(--space-3);
+  margin-top: var(--space-2);
 }
 
 .action-btn {
@@ -1056,15 +1083,15 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
   background: var(--gray-0);
   border: 1px solid var(--color-border);
   border-radius: 20px;
-  padding: var(--space-6);
-  margin-bottom: var(--space-6);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
 }
 .relations-section h3 {
   font-family: var(--font-display);
   font-size: 18px;
   font-weight: 700;
   color: var(--gray-900);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-3);
 }
 .relations-list {
   display: flex;
@@ -1185,12 +1212,14 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
 /* ---- Responsive ---- */
 @media (max-width: 480px) {
   .content {
-    padding: var(--space-4) var(--space-4) var(--space-10);
+    padding: var(--space-3) var(--space-4) var(--space-6);
   }
-  .type-illustration,
+  .type-illustration {
+    max-height: 240px;
+  }
   .type-illustration-placeholder {
-    width: 260px;
-    height: 260px;
+    width: 100%;
+    height: 240px;
   }
   .type-code {
     font-size: 44px;

@@ -129,12 +129,12 @@ async function goPrev() {
 }
 
 const optionLabels = [
-  { value: -3, label: '强烈不同意', short: '-3' },
-  { value: -2, label: '不同意', short: '-2' },
-  { value: -1, label: '有点不同意', short: '-1' },
-  { value: 1, label: '有点同意', short: '+1' },
-  { value: 2, label: '同意', short: '+2' },
-  { value: 3, label: '强烈同意', short: '+3' },
+  { value: -3, label: '强烈反对', short: '-3' },
+  { value: -2, label: '反对', short: '-2' },
+  { value: -1, label: '有点反对', short: '-1' },
+  { value: 1, label: '有点赞同', short: '+1' },
+  { value: 2, label: '赞同', short: '+2' },
+  { value: 3, label: '强烈赞同', short: '+3' },
 ]
 
 // 隐藏题四选项（id >= 149）
@@ -473,6 +473,10 @@ function isHiddenQuestion(qid: number): boolean {
   text-align: center;
   line-height: 1.3;
   max-width: 56px;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Selected states */
@@ -658,20 +662,49 @@ function isHiddenQuestion(qid: number): boolean {
 /* ---- Responsive ---- */
 @media (max-width: 480px) {
   .test-page {
-    padding: var(--space-4);
+    padding: var(--space-3) var(--space-3);
     padding-bottom: 90px;
+  }
+  .header {
+    margin-bottom: var(--space-3);
+  }
+  .progress-track {
+    margin-bottom: var(--space-5);
+  }
+  .question-slide {
+    gap: var(--space-4);
+  }
+  .question-card {
+    padding: var(--space-4) var(--space-3);
+    border-radius: 20px;
   }
   .question-text {
     font-size: 16px;
+    margin-bottom: var(--space-4);
+  }
+  .options {
+    gap: 4px;
   }
   .option-btn {
     padding: var(--space-2) 2px;
     border-radius: 12px;
+    gap: var(--space-1);
+  }
+  .opt-short {
+    font-size: 13px;
   }
   .opt-label {
     font-size: 9px;
-    max-width: 48px;
+    max-width: 44px;
+    min-height: 24px;
   }
+  .opt-dot {
+    width: 10px;
+    height: 10px;
+  }
+  .option-btn.degree-1 .opt-dot { width: 8px; height: 8px; }
+  .option-btn.degree-2 .opt-dot { width: 12px; height: 12px; }
+  .option-btn.degree-3 .opt-dot { width: 16px; height: 16px; }
   .nav-btn {
     padding: var(--space-2) var(--space-4);
     font-size: 14px;

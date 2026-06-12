@@ -161,7 +161,7 @@ function dismissModal() {
 
       <!-- 底部信息栏 -->
       <footer class="footer-bar">
-        <span class="footer-version">v1.3-alpha</span>
+        <span class="footer-version">v2.0-beta</span>
         <span class="footer-divider">·</span>
         <button class="footer-link" @click="showContributors = true">贡献者</button>
         <span class="footer-divider">·</span>
@@ -169,7 +169,7 @@ function dismissModal() {
           <span aria-hidden="true">✎</span> 反馈
         </button>
         <span class="footer-divider">·</span>
-        <span class="footer-copyright">© 2025 NFTI · 南方人专属</span>
+        <span class="footer-copyright">© 2026 NFTI · 南方人专属</span>
       </footer>
     </div>
 
@@ -196,8 +196,17 @@ function dismissModal() {
         <div class="changelog-list">
           <div class="changelog-item">
             <div class="changelog-version">
-              <span class="version-tag">v1.3-alpha</span>
+              <span class="version-tag">v2.0-beta</span>
               <span class="version-date">当前版本</span>
+            </div>
+            <ul>
+              <li>开放分享功能</li>
+              <li>优化人格插图</li>
+            </ul>
+          </div>
+          <div class="changelog-item">
+            <div class="changelog-version">
+              <span class="version-tag">v1.3-alpha</span>
             </div>
             <ul>
               <li>引入AI学长问答功能，基于人格类型提供个性化建议</li>
@@ -210,10 +219,8 @@ function dismissModal() {
             </div>
             <ul>
               <li>完成 16 种标准人格的插图设计与展示</li>
-              <li>新增人格关系分析（绝配 / 天敌 / 孽缘 / 专克）</li>
-              <li>结果页全新布局：插图作为视觉中心，NFTI 四字母便利贴</li>
-              <li>删除 ThreeScene 3D 黑块，优化页面视觉纯净度</li>
-              <li>反馈入口新增「人格建议」与「插图建议」类型</li>
+              <li>新增人格关系分析</li>
+              <li>结果页全新布局</li>
             </ul>
           </div>
           <div class="changelog-item">
@@ -221,11 +228,9 @@ function dismissModal() {
               <span class="version-tag">v1.1-alpha</span>
             </div>
             <ul>
-              <li>完成人格数据全面重构（v2 文档），19 种人格名称与描述更新</li>
-              <li>新增反馈入口（EmailJS），支持 Bug 反馈与功能建议</li>
+              <li>完成 19 种人格数据全面重构</li>
+              <li>新增反馈入口</li>
               <li>优化结果页分数计算与维度解析展示</li>
-              <li>四维解析条目全面校园化表述</li>
-              <li>新增隐藏款解锁条件提示</li>
             </ul>
           </div>
           <div class="changelog-item">
@@ -233,9 +238,7 @@ function dismissModal() {
               <span class="version-tag">v1.0-alpha</span>
             </div>
             <ul>
-              <li>完成 48 道完整测试题目设计与 12 道快速测试题目设计</li>
-              <li>完成 16 种标准人格 + 3 款隐藏人格的基础设计</li>
-              <li>搭建双模式测试框架（快速测试 / 完整测试）</li>
+              <li>完成测试题目与人格设计</li>
               <li>基于南方中学真实校园场景构建八维字母体系</li>
             </ul>
           </div>
@@ -261,11 +264,11 @@ function dismissModal() {
           </div>
           <div class="contributor-row">
             <span class="contributor-role">设计</span>
-            <span class="contributor-names">2120 戴睿羲 · ChatGPT</span>
+            <span class="contributor-names">2120 戴睿羲 · Gemini-3.5-Flash · Doubao-Seedream-4.5 · Qwen-Image-1.0</span>
           </div>
           <div class="contributor-row">
             <span class="contributor-role">内测志愿者</span>
-            <span class="contributor-names">2117 胡锦鹏、2118 言语薇、2119 蒋瀚霆、2119 马毓敏、2120 尹瑞熙、2317 董钊桧、2318 刘俊杰、2520 谭一凡</span>
+            <span class="contributor-names">2117 HJP、2118 YYW、2119 JHT、2119 MYM、2120 YRX、2120 QYH、2317 DZH、2318 LJJ、2520 TYF</span>
           </div>
           <div class="contributor-row">
             <span class="contributor-role">数据来源</span>
