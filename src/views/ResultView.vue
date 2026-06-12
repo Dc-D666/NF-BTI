@@ -46,6 +46,99 @@ const typeCount = ref(0)
 const showAiChat = ref(false)
 const showShare = ref(false)
 
+// 撒花动画
+const showConfetti = ref(true)
+const confettiCanvas = ref<HTMLCanvasElement | null>(null)
+
+interface ConfettiParticle {
+  x: number
+  y: number
+  r: number
+  dx: number
+  dy: number
+  color: string
+  tilt: number
+  tiltAngle: number
+  tiltAngleIncremental: number
+}
+
+function startConfetti() {
+  const canvas = confettiCanvas.value
+  if (!canvas) return
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+
+  const dpr = window.devicePixelRatio || 1
+  const width = window.innerWidth
+  const height = window.innerHeight
+  canvas.width = width * dpr
+  canvas.height = height * dpr
+  canvas.style.width = width + 'px'
+  canvas.style.height = height + 'px'
+  ctx.scale(dpr, dpr)
+
+  const colors: string[] = [
+    '#6366f1', '#818cf8', '#a5b4fc', '#c7d2fe',
+    '#f59e0b', '#fbbf24', '#fcd34d',
+    '#10b981', '#34d399', '#6ee7b7',
+    '#f43f5e', '#fb7185', '#fda4af',
+  ]
+
+  const particles: ConfettiParticle[] = []
+  const particleCount = 120
+
+  for (let i = 0; i < particleCount; i++) {
+    particles.push({
+      x: Math.random() * width,
+      y: Math.random() * height * 0.5 - height * 0.5,
+      r: Math.random() * 4 + 2,
+      dx: Math.random() * 2 - 1,
+      dy: Math.random() * 2 + 1,
+      color: colors[Math.floor(Math.random() * colors.length)]!,
+      tilt: Math.random() * 10,
+      tiltAngle: Math.random() * 10,
+      tiltAngleIncremental: Math.random() * 0.07 + 0.05,
+    })
+  }
+
+  let animationId: number
+  let elapsed = 0
+  const duration = 3000 // 3秒
+
+  function draw() {
+    if (!ctx) return
+    ctx.clearRect(0, 0, width, height)
+    elapsed += 16
+
+    particles.forEach((p) => {
+      p.tiltAngle += p.tiltAngleIncremental
+      p.y += (Math.cos(p.tiltAngle) + 1 + p.r / 2) / 2
+      p.x += Math.sin(p.tiltAngle) * 2
+      p.tilt = Math.sin(p.tiltAngle) * 15
+
+      ctx!.beginPath()
+      ctx!.lineWidth = p.r / 2
+      ctx!.strokeStyle = p.color
+      ctx!.moveTo(p.x + p.tilt + p.r / 3, p.y)
+      ctx!.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 5)
+      ctx!.stroke()
+    })
+
+    if (elapsed < duration) {
+      animationId = requestAnimationFrame(draw)
+    } else {
+      showConfetti.value = false
+    }
+  }
+
+  draw()
+
+  // 清理
+  setTimeout(() => {
+    cancelAnimationFrame(animationId)
+  }, duration + 100)
+}
+
 // 人格关系数据
 const relations = computed<RelationEntry[]>(() => {
   if (!result.value) return []
@@ -57,6 +150,8 @@ onMounted(() => {
     router.push('/')
     return
   }
+  // 启动撒花动画
+  startConfetti()
   // 增加完成计数和类型计数
   counter.hitComplete().then((n) => {
     completeCount.value = n
@@ -146,6 +241,13 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
 
 <template>
   <div class="result-page" v-if="result">
+    <!-- 撒花动画层 -->
+    <canvas
+      v-if="showConfetti"
+      ref="confettiCanvas"
+      class="confetti-canvas"
+    ></canvas>
+
     <div class="content">
       <!-- 顶部返回与反馈 -->
       <div class="top-bar">
@@ -206,12 +308,6 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
       <div v-if="result.type.detail" class="type-detail">
         <h3>你是这样的人</h3>
         <p>{{ result.mode === 'quick' ? (result.type.detail.length > 100 ? result.type.detail.slice(0, 100) + '...' : result.type.detail) : result.type.detail }}</p>
-      </div>
-
-      <!-- 计数信息 -->
-      <div v-if="completeCount > 0" class="counter-info">
-        <p>你是第 {{ completeCount }} 个完成测试的</p>
-        <p v-if="typeCount > 0">第 {{ typeCount }} 个 {{ result.type.name }} 类型</p>
       </div>
 
       <!-- 维度得分（完整测试和 Debug 模式） -->
@@ -491,6 +587,17 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
   transform: translateX(4px);
 }
 
+/* ---- Confetti ---- */
+.confetti-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 999;
+}
+
 /* ---- Result Page Base ---- */
 .result-page {
   min-height: 100vh;
@@ -650,6 +757,22 @@ function getDimensionInfo(leftScore: number, rightScore: number, mode: string) {
   font-style: italic;
   margin-top: 2px;
   margin-bottom: 0;
+}
+.counter-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  background: linear-gradient(135deg, var(--indigo-100), var(--indigo-50));
+  border: 1px solid var(--indigo-200);
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+.counter-icon {
+  font-size: 14px;
 }
 .type-four-letter {
   font-family: var(--font-mono);

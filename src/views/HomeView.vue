@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useTestStore } from '@/stores/testStore'
-import { counter, getLastCounterError } from '@/utils/counter'
+import { counter } from '@/utils/counter'
 import { ref, onMounted } from 'vue'
 import qqQrImg from '@/assets/QQ.jpg'
 import wxQrImg from '@/assets/WX.jpg'
@@ -23,7 +23,6 @@ let clickTimer: ReturnType<typeof setTimeout> | null = null
 
 // 访问计数
 const visitCount = ref(0)
-const counterError = ref('')
 
 onMounted(() => {
   const unfinished = store.hasUnfinishedProgress()
@@ -32,16 +31,9 @@ onMounted(() => {
     resumePage.value = unfinished.currentPage
     showResumeModal.value = true
   }
-  // 增加访问计数
+  // 增加访问计数（ruseo.cn Counter API）
   counter.hitVisit().then((n) => {
     visitCount.value = n
-    if (n === 0) {
-      const err = getLastCounterError()
-      if (err) {
-        counterError.value = `计数服务异常 (${err.status} ${err.statusText})`
-        console.error('[Counter Debug]', err)
-      }
-    }
   })
 })
 
@@ -547,7 +539,8 @@ function dismissModal() {
 }
 .footer-version,
 .footer-copyright,
-.footer-divider {
+.footer-divider,
+.footer-counter {
   font-size: 11px;
   color: var(--gray-400);
 }
