@@ -69,7 +69,7 @@ const shareText = computed(() => {
   const matchText = bestMatch.value
     ? `\n💕 绝配：${bestMatch.value.targetName}（${bestMatch.value.targetNfti}）`
     : ''
-  return `我在 NFTI 南方人格测试中测出了「${props.type.name}」(${nftiCode.value})！${matchText}\n\n${props.type.description}\n\n来测测你是哪种南方人？`
+  return `我在 NFTI 南方人格测试中测出了「${props.type.name}」(${nftiCode.value})！${matchText}\n\n${props.type.description}\n\n来测测你是哪种南方人？\n\nhttps://nf-bti.pages.dev`
 })
 
 // 复制文案
@@ -242,7 +242,7 @@ watch(() => props.show, (show) => {
             </div>
 
             <p class="share-tip">
-              {{ savedImageUrl ? '图片已生成，点击"保存图片"即可下载' : '正在生成分享图片...' }}
+              {{ savedImageUrl ? 'QQ、微信内置浏览器无法保存图片，请直接截屏保存' : '正在生成分享图片...' }}
             </p>
           </div>
         </Transition>
