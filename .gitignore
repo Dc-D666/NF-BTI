@@ -35,5 +35,8 @@ coverage
 # Vitest
 __screenshots__/
 
+# Environment files (may contain secrets)
+.env
+
 # Vite
 *.timestamp-*-*.mjs

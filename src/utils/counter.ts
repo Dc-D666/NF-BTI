@@ -10,7 +10,7 @@
  * 3. 每次 increment 时本地缓存 +1，作为近似显示值
  */
 
-const API_KEY = '387710790a66f48bdb7a839dd2ffb88c'
+const API_KEY = import.meta.env.VITE_COUNTER_API_KEY
 const BASE_URL = 'https://js.ruseo.cn/api/counter.php'
 
 // 计数器 ID 映射

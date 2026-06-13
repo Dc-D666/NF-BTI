@@ -2,7 +2,7 @@
 import { nftiSystemPrompt, buildPersonalityContext } from '@/data/knowledgeBase'
 
 const API_URL = 'https://api.deepseek.com/chat/completions'
-const API_KEY = 'sk-7f48da15fa4c4f19b07705d5a22d0b34'
+const API_KEY = import.meta.env.VITE_DEEPSEEK_API_KEY
 const MODEL = 'deepseek-v4-flash'
 
 export interface ChatMessage {
