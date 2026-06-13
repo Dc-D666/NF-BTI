@@ -1,9 +1,9 @@
 // AI 对话服务层 —— 封装 DeepSeek API 调用（支持流式输出）
 import { nftiSystemPrompt, buildPersonalityContext } from '@/data/knowledgeBase'
 
-const API_URL = 'https://xplt.sdu.edu.cn:4000/v1/chat/completions'
-const API_KEY = 'sk-CfB-p2wQQvMk010ZWxm9WA'
-const MODEL = 'SDU-AI/DeepSeek-V4-Flash'
+const API_URL = 'https://api.deepseek.com/chat/completions'
+const API_KEY = 'sk-7f48da15fa4c4f19b07705d5a22d0b34'
+const MODEL = 'deepseek-v4-flash'
 
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system'

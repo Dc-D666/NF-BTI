@@ -208,8 +208,11 @@ watch(() => props.show, (show) => {
                   <div class="dim-bar-track">
                     <div
                       class="dim-bar-fill"
-                      :class="{ left: getDimensionPct(pair.leftScore, pair.rightScore).winner === 'left' }"
-                      :style="{ width: Math.max(getDimensionPct(pair.leftScore, pair.rightScore).leftPct, getDimensionPct(pair.leftScore, pair.rightScore).rightPct) + '%' }"
+                      :class="{ right: getDimensionPct(pair.leftScore, pair.rightScore).winner === 'right' }"
+                      :style="{
+                        width: Math.max(getDimensionPct(pair.leftScore, pair.rightScore).leftPct, getDimensionPct(pair.leftScore, pair.rightScore).rightPct) + '%',
+                        marginLeft: getDimensionPct(pair.leftScore, pair.rightScore).winner === 'right' ? 'auto' : '0'
+                      }"
                     ></div>
                   </div>
                   <span class="dim-side" :class="{ active: getDimensionPct(pair.leftScore, pair.rightScore).winner === 'right' }">{{ pair.right }}</span>
@@ -492,8 +495,8 @@ watch(() => props.show, (show) => {
   border-radius: 4px;
   transition: width 600ms var(--ease-out-expo);
 }
-.dim-bar-fill.left {
-  background: linear-gradient(90deg, var(--indigo-400), var(--indigo-500));
+.dim-bar-fill.right {
+  background: linear-gradient(270deg, var(--indigo-500), var(--indigo-600));
 }
 
 /* 底部：二维码 + 网址 */
